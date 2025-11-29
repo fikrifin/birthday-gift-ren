@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    
+    <!-- Libraries -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                        script: ['Great Vibes', 'cursive'],
+                    },
+                    colors: {
+                        'bg-soft': '#fff0f3',
+                        'pastel-pink': '#ffb7b2',
+                        'pastel-purple': '#e2f0cb',
+                        'text-main': '#4a4a4a',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'wiggle': 'wiggle 3s ease-in-out infinite',
+                        'spin-slow': 'spin 8s linear infinite', // Animasi putar untuk ikon musik
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #fff0f3; color: #4a4a4a; overflow-x: hidden; }
+        
+        .polaroid {
+            background: white;
+            /* Lebih sedikit padding bawah dan sedikit lebih lebar kiri/kanan
+               agar proporsi cocok untuk layout landscape */
+            padding: 12px 16px 24px 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .polaroid:hover {
+            transform: scale(1.05) rotate(0deg) !important;
+            z-index: 20;
+        }
+
+        .tape {
+            background-color: rgba(255, 235, 205, 0.8);
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            width: 90px;
+            height: 25px;
+            z-index: 10;
+            backdrop-filter: blur(1px);
+        }
+
+        /* Transisi */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.8s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        /* Music Button Pulse */
+        .music-pulse {
+            box-shadow: 0 0 0 0 rgba(255, 183, 178, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 183, 178, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 183, 178, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 183, 178, 0); }
+        }
+
+        /* Cute Ribbon for Gift Card */
+        .ribbon {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 36px;
+            background: linear-gradient(90deg, #ffb7b2, #ffdac1);
+            border-radius: 9999px;
+            box-shadow: 0 6px 18px rgba(255, 183, 178, 0.35);
+        }
+        .ribbon:before, .ribbon:after {
+            content: '';
+            position: absolute;
+            top: 26px;
+            width: 18px;
+            height: 18px;
+            background: #ffb7b2;
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.1));
+        }
+        .ribbon:before { left: -6px; transform: rotate(-12deg); }
+        .ribbon:after { right: -6px; transform: rotate(12deg) scaleX(-1); }
+
+        /* Ticket edge for code area */
+        .ticket-edge {
+            position: relative;
+        }
+        .ticket-edge:before, .ticket-edge:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border: 2px dashed #f5c2c0;
+            border-radius: 9999px;
+        }
+        .ticket-edge:before { left: -12px; }
+        .ticket-edge:after { right: -12px; }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app">
+        
+        <!-- AUDIO ELEMENT (Tersembunyi) -->
+        <!-- Ganti 'src' dengan link lagu pilihanmu -->
+        <!-- Contoh lagu piano gratis dari internet -->
+        <audio ref="audioPlayer" loop src="musik.mp3"></audio>
+
+        <!-- TOMBOL MUSIK (Floating) -->
+        <div class="fixed top-6 right-6 z-50">
+            <button 
+                @click="toggleMusic" 
+                class="w-12 h-12 rounded-full bg-white border-2 border-pastel-pink text-pastel-pink shadow-md flex items-center justify-center transition-all hover:scale-110"
+                :class="{ 'music-pulse': isPlaying }"
+            >
+                <!-- Ikon berputar jika lagu menyala -->
+                <i :class="['ph-fill text-xl', isPlaying ? 'ph-music-notes animate-spin-slow' : 'ph-play']"></i>
+            </button>
+        </div>
+
+        <!-- HERO SECTION -->
+        <header class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-center px-4">
+            <div class="absolute top-10 left-10 w-64 h-64 bg-pink-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-float"></div>
+            <div class="absolute bottom-10 right-10 w-64 h-64 bg-purple-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-float" style="animation-delay: 2s"></div>
+
+            <div class="z-10 relative">
+                <span class="inline-block px-4 py-1 rounded-full bg-white border border-pink-200 text-pink-400 text-sm font-bold mb-6 shadow-sm">
+                    ✨ Untuk Kamu Sosok Istimewa ✨
+                </span>
+                
+                <h1 class="font-script text-7xl md:text-9xl text-text-main mb-4 leading-tight drop-shadow-sm">
+                    Happy<br>Birthday
+                </h1>
+                
+                <p class="text-gray-500 text-lg max-w-md mx-auto font-medium">
+                    Aku kirimkan cerita ini lewat "awan" internet,<br>karena ini lebih abadi daripada kertas.
+                </p>
+
+                <p class="text-gray-500 text-lg max-w-md mx-auto mb-10 font-small">
+                    *maaf kalau ilustrasi karakternya gak sesuai ya hehe
+                </p>
+                
+                <button @click="startJourney" class="group bg-white text-text-main px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-pink-200 flex items-center mx-auto gap-2">
+                    <span>Baca Ceritanya</span>
+                    <i class="ph-bold ph-arrow-down group-hover:translate-y-1 transition-transform"></i>
+                </button>
+                
+                <!-- Hint Musik -->
+                <p v-if="!isPlaying" class="text-xs text-pink-400 mt-4 animate-bounce cursor-pointer" @click="toggleMusic">
+                    (Pencet tombol baca ceritanya di atas ya atau Klik tombol musik di pojok kanan atas 🎵)
+                </p>
+            </div>
+        </header>
+
+        <!-- TIMELINE -->
+        <main id="timeline" class="max-w-4xl mx-auto px-6 py-24">
+            <div v-for="(item, index) in stories" :key="index" class="mb-32 relative">
+                <div 
+                    class="flex flex-col md:flex-row items-center gap-8 md:gap-16 transition-all duration-1000 transform"
+                    :class="[
+                        isVisible[index] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-24',
+                        index % 2 === 1 ? 'md:flex-row-reverse' : ''
+                    ]"
+                    :ref="el => { if(el) observeElement(el, index) }"
+                >
+                    <div class="flex-1 text-center md:text-left">
+                        <span class="text-pink-400 font-bold tracking-widest text-sm uppercase mb-2 block">{{ item.date }}</span>
+                        <h2 class="font-script text-4xl md:text-5xl text-text-main mb-4">{{ item.title }}</h2>
+                        <p class="text-gray-600 leading-relaxed text-lg">{{ item.text }}</p>
+                    </div>
+
+                    <div class="flex-1 flex justify-center">
+                        <div class="polaroid w-80 md:w-96 relative" :style="{ transform: 'rotate(' + item.rotation + 'deg)' }">
+                            <div class="tape" :style="{ transform: 'translateX(-50%) rotate(' + (Math.random() * 10 - 5) + 'deg)' }"></div>
+                            <div class="bg-gray-100 aspect-[4/3] overflow-hidden mb-3 relative group">
+                                <img :src="item.image" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110" alt="Memory">
+                            </div>
+                            <div class="text-center font-script text-2xl text-gray-500">{{ item.caption }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+        <!-- PRAYER SECTION -->
+        <section class="min-h-[60vh] flex items-center justify-center px-4 py-20 relative bg-bg-soft">
+            <div class="max-w-3xl w-full text-center relative z-10">
+                <div class="mb-8">
+                    <span class="inline-block px-4 py-1 rounded-full bg-white border border-pink-200 text-pink-400 text-sm font-bold mb-4 shadow-sm">
+                        Doa ku untuk mu
+                    </span>
+                    <h2 class="font-script text-5xl md:text-6xl text-text-main mb-6">Semoga Selalu Dalam Kebaikan</h2>
+                </div>
+                <div class="bg-white/70 backdrop-blur-sm border border-pink-100 rounded-3xl shadow-xl p-8 md:p-12 text-left">
+                    <p class="text-gray-700 leading-relaxed text-lg md:text-xl">
+                        Semoga hari-harimu dipenuhi ketenangan, kebahagiaan, dan keberanian untuk
+                        melangkah maju. Semoga Tuhan menjaga hatimu dari rasa lelah, menggantinya
+                        dengan rasa syukur, dan menguatkan langkahmu di setiap perjalanan.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed text-lg md:text-xl mt-6">
+                        Aku berdoa agar kamu selalu dikelilingi orang-orang baik, rezeki yang
+                        cukup, kesehatan yang melimpah, dan cinta yang tulus. Semoga mimpi-mimpimu
+                        satu per satu menjadi nyata pada waktu yang paling indah.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed text-lg md:text-xl mt-6">
+                        Jika suatu waktu kamu merasa sendiri, ingat bahwa ada doa yang selalu
+                        menyertaimu. Kamu berharga, kamu kuat, dan kamu layak bahagia.
+                    </p>
+                    <div class="mt-8 text-center">
+                        <span class="font-script text-4xl text-pink-400">Amin.</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Decorative soft blobs -->
+            <div class="absolute -z-0 top-10 left-10 w-40 h-40 bg-pink-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-float"></div>
+            <div class="absolute -z-0 bottom-6 right-12 w-56 h-56 bg-purple-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-float" style="animation-delay: 1.8s"></div>
+        </section>
+
+        <!-- GIFT SECTION -->
+        <section class="min-h-screen flex items-center justify-center px-4 py-20 relative bg-white rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+            <div class="max-w-xl w-full text-center relative z-10">
+                <div v-if="!giftOpened" class="transition-all duration-500">
+                    <div class="mb-6 inline-block p-4 bg-red-50 rounded-full text-red-400 animate-wiggle">
+                        <i class="ph-fill ph-gift text-6xl"></i>
+                    </div>
+                    <h2 class="font-script text-5xl mb-6 text-text-main">Satu Hal Lagi...</h2>
+                    <p class="text-gray-600 mb-8 text-lg">
+                        Aku bingung mau kasih apa, udah mikirin banyak tetap bingung hehe. Jadi aku kasih ini meskipun ga seberapa.
+                    </p>
+                    <button @click="openGift" class="bg-gradient-to-r from-pink-400 to-orange-300 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-pink-300/50 hover:scale-105 transition-all">
+                        Buka Hadiahnya
+                    </button>
+                </div>
+
+                <transition name="fade">
+                    <div v-if="giftOpened" class="relative">
+                        <!-- Tombol Tutup Gift -->
+                        <button @click="closeGift" aria-label="Tutup hadiah"
+                                class="absolute -top-3 -right-3 z-20 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-pink-500 hover:border-pink-300 transition-colors">
+                            <i class="ph-bold ph-x"></i>
+                        </button>
+                        <div class="bg-white p-3 rounded-3xl shadow-2xl transform -rotate-1 border border-pink-100/70 max-w-sm mx-auto relative">
+                            <div class="ribbon"></div>
+                            <div class="bg-gradient-to-br from-pastel-pink to-[#ffdac1] text-text-main p-6 rounded-2xl relative overflow-hidden h-40 flex flex-col justify-between items-start text-left">
+                                <div class="absolute right-[-20px] top-[-20px] w-32 h-32 bg-white opacity-30 rounded-full"></div>
+                                <div class="relative z-10">
+                                    <h3 class="font-bold text-2xl tracking-tight">Untuk Reneta</h3>
+                                    <p class="text-text-main/70 text-xs">Maaf ya ini kecil, tapi aku harap kamu suka.</p>
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                <p class="text-pink-400 text-xs mb-2 font-bold uppercase tracking-wide text-center">Kode Redeem</p>
+                                <div class="ticket-edge flex items-center justify-between bg-white border-2 border-dashed border-pink-100 rounded-xl p-3 mb-6 group hover:border-pink-300 transition-colors cursor-pointer" @click="copyCode">
+                                    <code class="font-mono text-xl text-gray-800 font-bold tracking-widest">{{ robloxCode }}</code>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-400 group-hover:text-pink-500 transition-colors">
+                                        <i :class="copied ? 'ph-bold ph-check text-green-500' : 'ph-bold ph-copy'"></i>
+                                    </button>
+                                </div>
+                                <a href="https://www.roblox.com/redeem" target="_blank" class="block w-full py-3 bg-pastel-pink text-white rounded-xl font-bold hover:brightness-95 transition-colors text-sm">
+                                    Redeem Sekarang <i class="ph-bold ph-arrow-up-right inline ml-1"></i>
+                                </a>
+                            </div>
+                            <!-- Cute bow at bottom -->
+                            <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#ffdac1] rounded-full shadow-md"></div>
+                        </div>
+                        <p class="mt-8 font-script text-4xl text-pink-400">Happy Gaming!</p>
+                    </div>
+                </transition>
+            </div>
+        </section>
+
+        <!-- ABOUT ME SECTION (Collapsible) -->
+        <section class="px-4 py-16 relative bg-bg-soft">
+            <div class="max-w-3xl mx-auto">
+                <button @click="toggleAbout" :aria-expanded="aboutOpen.toString()" class="w-full flex items-center justify-between bg-white border border-pink-100 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pastel-pink/20 text-pink-500">
+                            <i class="ph-bold ph-user"></i>
+                        </span>
+                        <div class="text-left">
+                            <p class="text-xs uppercase tracking-widest text-pink-400 font-bold">Profil</p>
+                            <h3 class="font-script text-3xl text-text-main leading-none">Tentang Aku</h3>
+                        </div>
+                    </div>
+                    <i :class="['ph-bold ph-caret-down text-pink-500 transition-transform', aboutOpen ? 'rotate-180' : '']"></i>
+                </button>
+
+                <div v-show="aboutOpen" class="overflow-hidden transition-all duration-500">
+                    <div class="mt-4 bg-white/70 backdrop-blur-sm border border-pink-100 rounded-2xl p-6 md:p-8 shadow-xl">
+                        <p class="text-gray-700 leading-relaxed mb-2 text-lg">
+                            Nah mungkin kamu penasaran siapa aku yang sudah bikin ini semua ya hehe.
+                            Kamu tau aku sebagai "Fin". 
+                        </p>
+                        <p class="text-gray-700 leading-relaxed mb-2 text-lg">
+                            Nyata nya nama ku berbeda dengan itu. Selama aku bermain
+                            baru kamu yang pertama kali tau nama asliku (ga boong), kecuali temen RL aku yang main Roblox juga. 
+                            Nama ku sangat indonesia banget haha. Kenalin Ren nama asli aku adalah Fikri, nama lengkap ku
+                            Mohammad Fikri Abdillah. Kamu tau aku dari mana dan tanggal lahirku kan, jadi ga perlu aku sebutin.
+                            Tinggi badan ku? aku bingung loh 169 kamu denger dari mana, aku bilang nya tinggi aku 160-an. Ga tau
+                            berapa tepat nya, tapi harusnya ga sampe 165 jadi aku adalah si pendek.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed mb-2 text-lg">
+                            Aku bekerja sebagai software engineer di sebuah tempat di Samarinda. Aku terlahir dari keluarga sederhana
+                            dan aku bersyukur dengan itu. Ren jujur aku adalah orang dengan banyak kekurangan, bahkan jika dibandingkan
+                            dengan mereka yang pernah hadir di hidupmu. Mungkin kelas kita berbeda tapi aku ga peduli, 
+                            aku hanya ingin menjadi seseorang yang berusaha dan tetap jujur menyukaimu.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed text-lg">
+                            Aku harap kamu suka dengan hadiah sederhana ini. 
+                            Entah bagaimana akhir dari usaha aku ini, 
+                            tapi bagiku kebahagiaanmu adalah yang utama.
+                            Buat kamu yang tokoh utama di cerita hidup aku yang membosankan ini,
+                            Selamat ulang tahun sekali lagi, semoga semua impian dan harapanmu
+                            tercapai di tahun yang baru ini.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="py-8 text-center text-gray-400 text-xs">
+            <p>Dibuat spesial untuk ulang tahunmu.</p>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // --- KONFIGURASI LAGU ---
+                // Kamu harus mengganti URL di tag <audio> di atas.
+                // Atau, ganti link di bawah ini jika ingin mengubahnya lewat script:
+                // Cari file .mp3 atau .ogg yang direct link (bukan link youtube/spotify).
+                
+                const audioPlayer = ref(null);
+                const isPlaying = ref(false);
+
+                const toggleMusic = () => {
+                    if (audioPlayer.value) {
+                        if (isPlaying.value) {
+                            audioPlayer.value.pause();
+                        } else {
+                            // Mencoba memutar
+                            audioPlayer.value.play().then(() => {
+                                // Berhasil
+                            }).catch(error => {
+                                console.log("Autoplay blocked, user interaction needed");
+                            });
+                        }
+                        isPlaying.value = !isPlaying.value;
+                    }
+                };
+                
+                // --- KONFIGURASI DATA LAINNYA ---
+                const robloxCode = ref('Sedang Di Kumpulkan');
+                const stories = ref([
+                    {
+                        date: '30 November 2025',
+                        title: 'Pertemuan Kita',
+                        text: 'Waktu itu tanpa sengaja kita ketemu, mulai dari obrolan kecil, sampai sharing cerita tentang yang lama itu. Aku yang denger tentang itu, melihat diri aku yang dulu disakitin dengan cara yang sama. Bersyukur waktu itu kamu tidur setelah beberapa hari gak tidur. Senang bisa menemani kamu waktu itu. Aku berpikir waktu itu, "ya tuhan, hilangkan luka hati orang ini.".',
+                        image: '01.png', 
+                        caption: 'Pertemuan Virtual Aku dan Kamu',
+                        rotation: -2, 
+                    },
+                    {
+                        date: 'Ceritamu...',
+                        title: 'Berteman',
+                        text: 'Semenjak pertemuan itu, kita jadi sering ngobrol. Semakin banyak cerita yang kamu sampaikan ke aku. Padahal waktu itu aku berpikir hanya untuk membantu menemani hingga kamu lupa dengan sakit yang lama dan melanjutkan langkah berikutnya. Semoga aku bisa jadi teman yang baik untuk kamu.',
+                        image: '02.png',
+                        caption: 'Obrolan Malam yang Hangat',
+                        rotation: 3, 
+                    },
+                    {
+                        date: 'Berbeda...',
+                        title: 'Banyak Teman, Tapi Kamu Terasa Berbeda',
+                        text: 'Semakin lama aku dan kamu ngobrol, tanpa aku sadari, aku mulai suka dari cara kamu bercerita. Aku suka cara kamu tertawa, cara kamu berinteraksi. Aku mulai merasa nyaman dengan kehadiran kamu. Aku mulai berharap obrolan kita gak pernah berakhir.',
+                        image: '03.png', 
+                        caption: 'Obrolan Itu Terasa Manis',
+                        rotation: 2,
+                    },
+                    {
+                        date: 'Suka...',
+                        title: 'Perasaan Ini',
+                        text: 'Semakin hari, perasaan aku makin kuat dan makin nunjukin emosi yang berbeda. Aku mulai bisa merasa cemburu, merasa sedih, dan merasa bahagia saat kamu hadir. Ketika aku bertanya pada temanku, mereka bilang itu namanya jatuh cinta. Padahal waktu itu aku belum tau seperti apa wujud kamu, tapi aku sudah merasa suka sama kamu.',
+                        image: '04.png',
+                        caption: 'Kamu Spesial',
+                        rotation: -3,
+                    },
+                    {
+                        date: 'Bahagia...',
+                        title: 'Selamat Ulang Tahun!',
+                        text: 'Setelah semua cerita itu, aku senang bisa suka sama kamu. Aku senang berani mengungkapkan itu. Aku senang ketika kamu mengingat aku. Terima kasih sudah menjadi dirimu yang luar biasa. Semoga di usiamu yang baru ini, semua harapan dan impianmu tercapai. Happy birthday, semoga hari-harimu selalu dipenuhi kebahagiaan dan cinta.',
+                        image: '05.png',
+                        caption: 'Hari Spesialmu',
+                        rotation: 1,
+                    }
+                ]);
+
+                const isVisible = ref({});
+                const giftOpened = ref(false);
+                const copied = ref(false);
+                const aboutOpen = ref(false);
+
+                const startJourney = () => {
+                    // Otomatis coba putar musik saat tombol "Baca Cerita" diklik
+                    if (!isPlaying.value) toggleMusic();
+                    document.getElementById('timeline').scrollIntoView({ behavior: 'smooth' });
+                };
+
+                const openGift = () => {
+                    giftOpened.value = true;
+                    var count = 200;
+                    var defaults = { origin: { y: 0.7 } };
+                    function fire(particleRatio, opts) {
+                        confetti(Object.assign({}, defaults, opts, {
+                            particleCount: Math.floor(count * particleRatio)
+                        }));
+                    }
+                    const colors = ['#ffb7b2', '#e2f0cb', '#ffdac1', '#e0bbff'];
+                    fire(0.25, { spread: 26, startVelocity: 55, colors: colors });
+                    fire(0.2, { spread: 60, colors: colors });
+                    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: colors });
+                };
+
+                const closeGift = () => {
+                    giftOpened.value = false;
+                };
+
+                const copyCode = () => {
+                    navigator.clipboard.writeText(robloxCode.value).then(() => {
+                        copied.value = true;
+                        setTimeout(() => copied.value = false, 2000);
+                    });
+                };
+
+                const observeElement = (el, index) => {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                isVisible.value[index] = true;
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.3 });
+                    observer.observe(el);
+                };
+
+                const toggleAbout = () => {
+                    aboutOpen.value = !aboutOpen.value;
+                };
+
+                return {
+                    stories, robloxCode, isVisible, giftOpened, copied, audioPlayer, isPlaying,
+                    aboutOpen,
+                    startJourney, openGift, closeGift, copyCode, observeElement, toggleMusic, toggleAbout
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
