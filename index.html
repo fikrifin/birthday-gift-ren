@@ -164,7 +164,7 @@
 
             <div class="z-10 relative">
                 <span class="inline-block px-4 py-1 rounded-full bg-white border border-pink-200 text-pink-400 text-sm font-bold mb-6 shadow-sm">
-                    ✨ Untuk Kamu Sosok Istimewa ✨
+                    ✨ Untuk Kamu Sosok Yang Tak Bisa Ku Miliki ✨
                 </span>
                 
                 <h1 class="font-script text-7xl md:text-9xl text-text-main leading-tight drop-shadow-sm">
@@ -179,7 +179,7 @@
                 </p>
 
                 <p class="text-gray-500 text-lg max-w-md mx-auto mb-10 font-small">
-                    *maaf kalau ilustrasi karakternya gak sesuai ya hehe
+                    Update 1 Februari 2026: Cerita sudah lengkap ya Ren, sekarang bisa dibaca sampai akhir ceritanya.
                 </p>
                 
                 <button @click="startJourney" class="group bg-white text-text-main px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-pink-200 flex items-center mx-auto gap-2">
@@ -260,7 +260,7 @@
         </section>
 
         <!-- GIFT SECTION -->
-        <section class="min-h-screen flex items-center justify-center px-4 py-20 relative bg-white rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <!-- <section class="min-h-screen flex items-center justify-center px-4 py-20 relative bg-white rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
             <div class="max-w-xl w-full text-center relative z-10">
                 <div v-if="!giftOpened" class="transition-all duration-500">
                     <div class="mb-6 inline-block p-4 bg-red-50 rounded-full text-red-400 animate-wiggle">
@@ -274,10 +274,10 @@
                         Ingat bahwa itu dari seseorang yang begitu menyukaimu, begitu spesial di hatinya, dan orang itu adalah aku.
                         Aku bingung harus ngasih apa sebenarnya, waktu hari minggu kemarin aku keluar buat nyari.
                     </p>
-                    <!-- <button @click="openGift" class="bg-gradient-to-r from-pink-400 to-orange-300 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-pink-300/50 hover:scale-105 transition-all">
+                    <button @click="openGift" class="bg-gradient-to-r from-pink-400 to-orange-300 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-pink-300/50 hover:scale-105 transition-all">
                         Buka Hadiahnya
-                    </button> -->
-                </div>
+                    </button>
+                </div> -->
 
                 <!-- <transition name="fade">
                     <div v-if="giftOpened" class="relative"> -->
@@ -313,11 +313,11 @@
                         <p class="mt-8 font-script text-4xl text-pink-400">Happy Gaming!</p>
                     </div>
                 </transition> -->
-            </div>
-        </section>
+            <!-- </div>
+        </section> -->
 
         <!-- ABOUT ME SECTION (Collapsible) -->
-        <section class="px-4 py-16 relative bg-bg-soft">
+        <!-- <section class="px-4 py-16 relative bg-bg-soft">
             <div class="max-w-3xl mx-auto">
                 <button @click="toggleAbout" :aria-expanded="aboutOpen.toString()" class="w-full flex items-center justify-between bg-white border border-pink-100 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-all">
                     <div class="flex items-center gap-3">
@@ -377,6 +377,45 @@
                         </p>
                     </div>
                 </div>
+            </div>
+        </section> -->
+
+        <!-- FAREWELL SECTION -->
+        <section class="min-h-[70vh] flex items-center justify-center px-4 py-20 relative bg-white">
+            <div class="max-w-3xl w-full text-center relative z-10">
+                <div class="mb-8">
+                    <span class="inline-block px-4 py-1 rounded-full bg-pink-50 border border-pink-200 text-pink-400 text-sm font-bold mb-4 shadow-sm">
+                        Selamat Tinggal
+                    </span>
+                    <h2 class="font-script text-5xl md:text-6xl text-text-main mb-6">Untuk Perjalananmu Selanjutnya</h2>
+                </div>
+                <div class="bg-bg-soft/50 backdrop-blur-sm border border-pink-100 rounded-3xl shadow-xl p-8 md:p-12">
+                    <p class="text-gray-700 leading-relaxed text-lg md:text-xl mb-6">
+                        Terima kasih untuk semua momen yang kita lalui bersama. Setiap tawa, 
+                        setiap obrolan, dan setiap kenangan akan selalu aku simpan di sudut 
+                        terdalam hatiku.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed text-lg md:text-xl mb-6">
+                        Meskipun jalan kita kini berbeda, aku tulus berharap kebahagiaanmu 
+                        mengiringi setiap langkahmu. Kamu layak mendapatkan cinta yang tulus, 
+                        kebahagiaan yang utuh, dan kehidupan yang penuh warna.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed text-lg md:text-xl mb-6">
+                        Jika suatu saat kamu mengingat aku, ingatlah versi terbaik dari kita. 
+                        Ingatlah bahwa ada seseorang yang benar-benar tulus mencintaimu, 
+                        dan orang itu adalah aku.
+                    </p>
+                    <div class="mt-10 pt-8 border-t border-pink-100">
+                        <p class="font-script text-4xl text-pink-400 mb-3">Selamat tinggal, Reneta.</p>
+                        <p class="text-gray-600 text-base italic">
+                            Semoga kita bertemu lagi di kehidupan yang lebih baik, dengan cerita yang lebih indah. Love You More Than Words Can Say.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Decorative elements -->
+                <div class="absolute -z-10 top-20 left-10 w-48 h-48 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float"></div>
+                <div class="absolute -z-10 bottom-20 right-10 w-56 h-56 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float" style="animation-delay: 1.5s"></div>
             </div>
         </section>
 
@@ -456,7 +495,31 @@
                         image: 'images/05.png',
                         caption: 'Hari Spesialmu',
                         rotation: 1,
-                    }
+                    },
+                    {
+                        date: '13 Desember 2025',
+                        title: 'Perjalanan Kita Berdua Dimulai',
+                        text: 'Hari itu, saat itu pada akhirnya aku mengungkapkan perasaanku padamu. Aku senang kamu menerima perasaanku. Aku senang kamu mau menjadi seseorang yang spesial di hidupku. Aku janji akan berusaha menjadi yang terbaik untuk kamu. Terima kasih sudah menjadi dirimu yang luar biasa. Aku harap perjalanan kita berdua akan selalu bahagia.',
+                        image: 'images/06.png',
+                        caption: 'Awal dari Segalanya',
+                        rotation: -2,
+                    },
+                    {
+                        date: 'Waktu...',
+                        title: 'Kebersamaan Kita',
+                        text: 'Hubungan kita dimulai, banyak waktu yang kita habiskan bersama dengan berbagai emosi. Mulai dari obrolan panjang, bermain game bareng, hingga saling mendukung di saat susah. Aku senang bisa menjadi bagian dari hidupmu. Aku harap kita bisa terus bersama dan saling mendukung satu sama lain.',
+                        image: 'images/07.png',
+                        caption: 'Kebersamaan yang Indah',
+                        rotation: 2,
+                    },
+                    {
+                        date: 'Sekarang...',
+                        title: 'Untuk Masa Depan Kita',
+                        text: 'Aku tidak percaya dengan akhir yang seperti ini. Akhir dimana kita berdua berpisah. Kamu sudah menemukannya bukan? Sosok yang selama ini kamu cari, sosok yang memberikan kebahagiaan yang kamu butuhkan. Aku bahagia untukmu. Aku harap kamu bahagia bersamanya. Terima kasih sudah menjadi bagian dari hidupku, terima kasih sudah mengajarkanku arti mencintai seseorang sekali lagi. Aku harap masa depanmu cerah, aku harap kamu selalu bahagia.',
+                        image: 'images/08.jpeg',
+                        caption: 'Masa Depan yang Cerah',
+                        rotation: -1,
+                    },
                 ]);
 
                 const isVisible = ref({});
