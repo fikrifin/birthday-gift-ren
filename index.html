@@ -50,6 +50,8 @@
     </script>
 
     <style>
+        #app { position: relative; }
+
         body { background-color: #fff0f3; color: #4a4a4a; overflow-x: hidden; }
         
         .polaroid {
@@ -135,6 +137,93 @@
         }
         .ticket-edge:before { left: -12px; }
         .ticket-edge:after { right: -12px; }
+
+        /* Dust transition for symbolic farewell */
+        .dust-target {
+            will-change: transform, filter, opacity;
+            transform-origin: center;
+            backface-visibility: hidden;
+        }
+        .dust-target.is-dusting {
+            animation-name: dust-away;
+            animation-duration: 1.2s;
+            animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+            animation-fill-mode: forwards;
+            animation-delay: 0ms;
+        }
+        .dust-target.is-dusted {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            height: 0 !important;
+            margin: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            border: 0 !important;
+            overflow: hidden;
+        }
+        @keyframes dust-away {
+            0% {
+                opacity: 1;
+                filter: blur(0px);
+                transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+            }
+            40% {
+                opacity: 0.6;
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 0;
+                filter: blur(10px);
+                transform: translate3d(var(--dust-x, 0px), var(--dust-y, -40px), 0) scale(0.88) rotate(var(--dust-r, 0deg));
+            }
+        }
+        .dust-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 70;
+        }
+        .dust-speck {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background: rgba(145, 145, 145, 0.35);
+            filter: blur(0.5px);
+            animation: dust-speck 2.2s ease-out forwards;
+        }
+        @keyframes dust-speck {
+            0% {
+                opacity: 0;
+                transform: translate3d(0, 0, 0) scale(0.6);
+            }
+            15% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate3d(var(--tx, 0px), var(--ty, -60px), 0) scale(0.12);
+            }
+        }
+
+        .final-forget {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+            z-index: 90;
+            background: radial-gradient(circle at center, rgba(255, 240, 243, 0.75), rgba(255, 240, 243, 0.95));
+            animation: fade-in-soft 900ms ease forwards;
+        }
+        @keyframes fade-in-soft {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -423,6 +512,12 @@
         <footer class="py-8 text-center text-gray-400 text-xs">
             <p>Dibuat spesial untuk ulang tahunmu. Dari Fikri</p>
         </footer>
+
+        <transition name="fade">
+            <div v-if="showForgetText" class="final-forget">
+                <p class="font-script text-6xl md:text-8xl text-gray-500 tracking-wide">lupakanlah</p>
+            </div>
+        </transition>
     </div>
 
     <script>
@@ -527,6 +622,7 @@
                 const giftOpened = ref(false);
                 const copied = ref(false);
                 const aboutOpen = ref(false);
+                const showForgetText = ref(false);
 
                 const startJourney = () => {
                     // Otomatis coba putar musik saat tombol "Baca Cerita" diklik
@@ -576,9 +672,94 @@
                     aboutOpen.value = !aboutOpen.value;
                 };
 
+                const createDustOverlay = (rect) => {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'dust-overlay';
+
+                    const count = 52;
+                    for (let i = 0; i < count; i++) {
+                        const speck = document.createElement('span');
+                        speck.className = 'dust-speck';
+
+                        const size = Math.max(2, Math.random() * 6);
+                        const left = rect.left + Math.random() * rect.width;
+                        const top = rect.top + Math.random() * rect.height;
+                        const tx = (Math.random() - 0.5) * 220;
+                        const ty = -20 - Math.random() * 160;
+                        const delay = Math.random() * 260;
+                        const duration = 700 + Math.random() * 600;
+
+                        speck.style.width = `${size}px`;
+                        speck.style.height = `${size}px`;
+                        speck.style.left = `${left}px`;
+                        speck.style.top = `${top}px`;
+                        speck.style.setProperty('--tx', `${tx}px`);
+                        speck.style.setProperty('--ty', `${ty}px`);
+                        speck.style.animationDelay = `${delay}ms`;
+                        speck.style.animationDuration = `${duration}ms`;
+
+                        overlay.appendChild(speck);
+                    }
+
+                    document.body.appendChild(overlay);
+                    setTimeout(() => {
+                        overlay.remove();
+                    }, 1700);
+                };
+
+                const dustElement = (el) => {
+                    if (!el || el.dataset.dusted === '1') return;
+                    el.dataset.dusted = '1';
+                    el.classList.add('dust-target', 'is-dusting');
+
+                    const rect = el.getBoundingClientRect();
+                    createDustOverlay(rect);
+
+                    const pieces = Math.max(6, Math.min(22, Math.floor(rect.height / 40)));
+                    for (let i = 0; i < pieces; i++) {
+                        const x = Math.round((Math.random() - 0.5) * 220);
+                        const y = -20 - Math.round(Math.random() * 180);
+                        const r = Math.round((Math.random() - 0.5) * 24);
+                        el.style.setProperty('--dust-x', `${x}px`);
+                        el.style.setProperty('--dust-y', `${y}px`);
+                        el.style.setProperty('--dust-r', `${r}deg`);
+                    }
+
+                    setTimeout(() => {
+                        el.classList.remove('is-dusting');
+                        el.classList.add('is-dusted');
+                    }, 1220);
+                };
+
+                const dustAllContent = () => {
+                    const appRoot = document.getElementById('app');
+                    if (!appRoot) return;
+
+                    const targets = [
+                        ...appRoot.querySelectorAll('header, section, footer, .fixed.top-6.right-6'),
+                        ...appRoot.querySelectorAll('main > div')
+                    ];
+
+                    targets.forEach((el, index) => {
+                        setTimeout(() => dustElement(el), index * 110);
+                    });
+
+                    const totalDuration = (targets.length * 110) + 1500;
+                    setTimeout(() => {
+                        showForgetText.value = true;
+                    }, totalDuration);
+                };
+
+                onMounted(() => {
+                    setTimeout(() => {
+                        dustAllContent();
+                    }, 350);
+                });
+
                 return {
                     stories, robloxCode, isVisible, giftOpened, copied, audioPlayer, isPlaying,
                     aboutOpen,
+                    showForgetText,
                     startJourney, openGift, closeGift, copyCode, observeElement, toggleMusic, toggleAbout
                 };
             }
